@@ -1,5 +1,8 @@
 package edu.handong.csee.java.examples;
 
+import java.io.File;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -10,6 +13,7 @@ import org.apache.commons.cli.Options;
 public class Runner {
 	
 	String path;
+	boolean fullpath;
 	boolean verbose;
 	boolean help;
 
@@ -32,13 +36,34 @@ public class Runner {
 			// path is required (necessary) data so no need to have a branch.
 			System.out.println("You provided \"" + path + "\" as the value of the option p");
 			
-			// TODO show the number of files in the path
+
+			int lastIndex = path.lastIndexOf("/");
+			File file = new File(path.substring(0,lastIndex+1));
 			
+			// TODO show the number of files in the path
+			System.out.println( file.listFiles().length );
+				
 			if(verbose) {
 				
-				// TODO list all files in the path
-				
+				// TODO list all files in the path			
+				if(file.isDirectory()) {
+					File[] fileList = file.listFiles();
+					for(File tFile: fileList) {
+						System.out.println(tFile.getName());
+					}
+				}		
 				System.out.println("Your program is terminated. (This message is shown because you turned on -v option!");
+			}
+			
+			
+			if(fullpath) {
+				File fullpath = new File(path);
+			    try {
+			        System.out.println(fullpath.getCanonicalPath());
+			      } catch (IOException e) {
+			        System.err.println(e);
+			        System.exit(1);
+			      }
 			}
 		}
 	}
@@ -53,6 +78,7 @@ public class Runner {
 			path = cmd.getOptionValue("p");
 			verbose = cmd.hasOption("v");
 			help = cmd.hasOption("h");
+			fullpath = cmd.hasOption("f");
 
 		} catch (Exception e) {
 			printHelp(options);
@@ -86,6 +112,15 @@ public class Runner {
 		options.addOption(Option.builder("h").longOpt("help")
 		        .desc("Help")
 		        .build());
+		
+		// add options by using OptionBuilder
+		options.addOption(Option.builder("f").longOpt("fullpath")
+				.desc("Display directories!")
+				//.hasArg()     // this option is intended not to have an option value but just an option
+				.argName("fullpath option")
+				//.required() // this is an optional option. So disabled required().
+				.build());
+
 
 		return options;
 	}
@@ -97,5 +132,4 @@ public class Runner {
 		String footer ="\nPlease report issues at https://github.com/lifove/CLIExample/issues";
 		formatter.printHelp("CLIExample", header, options, footer, true);
 	}
-
 }
